@@ -92,13 +92,97 @@
 
 				</section>
 				<section>
-					<h3>E o micropython nisso?</h3>
+					<section>
+						<h3>E o MicroPython nisso?</h3>
+					</section>
+					<section>
+						<blockquote cite="micropython.org">
+							MicroPython is a lean and efficient implementation of the Python 3 programming language 
+							that includes a small subset of the Python standard library and is optimised to run on 
+							microcontrollers and in constrained environments.
+						</blockquote>
+					</section>
+					<section>
+						<h3>Webrepl</h3>
+						<img src="images/webrepl.png"/>
+					</section>
 				</section>
 				<section>
-					<h3>Juntando os dois</h3>
+					<section>
+						<h3>Juntando os dois</h3>
+					</section>
+					<section>
+						<h3>Trocar o firmware original (que funciona com lua) do NodeMCU</h3>
+						<ul>
+							<li>Baixar o arquivo da firmware do <a href="http://micropython.org/download#esp8266">MicroPython</a></li>
+							<li>Instalar a firmware ou através de uma IDE como a ESPCut ou da seguinte maneira</li>
+							<pre><code class="hljs" data-trim>
+								pip install esptool
+								esptool.py --port /dev/ttyUSB0 erase_flash 
+								esptool.py --port /dev/ttyUSB0 --baud 115200 write_flash \
+								--flash_size=detect 0 esp8266-20170108-v1.8.7.bin
+							</code></pre>
+							<li>Voilá sua plaquinha já roda MicroPython!</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Exemplo de código em MicroPython</h2>
+						<pre><code class="hljs" data-trim contenteditable>
+							import machine
+							pins = [machine.Pin(i, machine.Pin.IN) for i in (0, 2, 4, 5, 12, 13, 14, 15)]
+
+							html = """<!DOCTYPE html>
+							<html>
+								<head> <title>ESP8266 Pins</title> </head>
+								<body> <h1>ESP8266 Pins</h1>
+									<table border="1"> <tr><th>Pin</th><th>Value</th></tr> %s </table>
+								</body>
+							</html>
+							"""
+
+							import socket
+							addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+
+							s = socket.socket()
+							s.bind(addr)
+							s.listen(1)
+
+							print('listening on', addr)
+
+							while True:
+								cl, addr = s.accept()
+								print('client connected from', addr)
+								cl_file = cl.makefile('rwb', 0)
+								while True:
+									line = cl_file.readline()
+									if not line or line == b'\r\n':
+										break
+								rows = ['<tr><td>%s</td><td>%d</td></tr>' % (str(p), p.value()) for p in pins]
+								response = html % '\n'.join(rows)
+								cl.send(response)
+								cl.close()
+						</code></pre>
+						
+					</section>
 				</section>
 				<section>
-					<h3>Exemplos</h3>
+					<h2>Obrigada!</h2>
+					<div style="display: flex; align-items: center">
+						<div style="font-size: 0.75em">
+							<p>
+								Anna Cruz
+							</p>
+							<p style="display: flex; align-items: center">
+								<img src="images/twitter_logo.png" width="30em" height="30em" style="border: none; margin: 5px"/> @yuizinha
+							</p>
+							<p style="display: flex; align-items: center">
+								<img src="images/mail_logo.png" width="30em"height="30em" style="border: none; margin: 5px"/ >anna.cruz@gmail.com
+							</p>
+						</div>
+						<div>
+							<img src="images/freddie.png" style="border: none"/>
+						</div>
+					</div>
 				</section>
 			</div>
 		</div>
